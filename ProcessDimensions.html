@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+    <?!= include('Styles') ?>
+    <script>
+      window.data = <?!= JSON.stringify(data) ?>;
+    </script>
+  </head>
+  <body>
+    <div class="block">
+      Processing dimension <span id="current" data-value="1">1</span> / <?= data.limit ?>
+    </div>
+    <div class="block">
+      <table id="dimensions">
+        <tr>
+          <th>
+            Old (Google Analytics)
+          </th>
+          <th>
+          </th>
+          <th>
+            New (Source Data)
+          </th>
+        </tr>
+        <tr>
+          <td>
+            Name: <span id="oldName"></span><br/>
+            Scope: <span id="oldScope"></span><br/>
+            Active: <span id="oldActive"></span>
+          </td>
+          <td>
+            <strong>=></strong>
+          </td>
+          <td>
+            Name: <span id="newName"></span><br/>
+            Scope: <span id="newScope"></span><br/>
+            Active: <span id="newActive"></span>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="block" id="warning"></div>
+    <div class="block">
+      <button id="update" class="create" disabled>Update</button>
+      <button id="skip" class="action" disabled>Skip</button>
+      <button id="close">Cancel</button>
+    </div>    
+    <?!= include('ProcessJavaScript') ?>    
+  </body>
+</html>
+
+

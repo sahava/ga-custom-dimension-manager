@@ -1,0 +1,87 @@
+<script>
+  (function() {
+    var limit = data.limit;
+    var accountId = data.accountId;
+    var propertyId = data.propertyId;
+    var current = document.querySelector('#current');
+    var oldName = document.querySelector('#oldName');
+    var newName = document.querySelector('#newName');
+    var oldScope = document.querySelector('#oldScope');
+    var newScope = document.querySelector('#newScope');
+    var oldActive = document.querySelector('#oldActive');
+    var newActive = document.querySelector('#newActive');
+    var update = document.querySelector('#update');
+    var skip = document.querySelector('#skip');
+    var close = document.querySelector('#close');
+    var warning = document.querySelector('#warning');
+    var dimensions = data.dimensions;
+    var sourceData = data.sourceData;
+    var i, newI, oDim, nDim;
+    
+    var run = function(i) {
+      var updateDimension, skipDimension, checkClose;
+      oDim = dimensions.items[i];
+      nDim = sourceData[i];
+      newI = i + 1;
+      current.setAttribute('data-value', newI);
+      current.innerHTML = newI;
+      oldName.innerHTML = oDim && oDim.name || '-';
+      oldScope.innerHTML = oDim && oDim.scope || '-';
+      oldActive.innerHTML = oDim && (oDim.active || oDim.active === false) ? oDim.active : '-';
+      newName.innerHTML = nDim.name;
+      newScope.innerHTML = nDim.scope;
+      newActive.innerHTML = nDim.active;
+      
+      checkClose = function() {
+        if (newI < limit) { 
+          run(newI); 
+        } else {
+          close.innerHTML = 'Close';
+          warning.className = 'block';
+          warning.innerHTML = 'All done! You can close this dialog now.';
+        }     
+      };
+      
+      updateDimension = function() {
+        update.removeEventListener('click', updateDimension);
+        skip.removeEventListener('click', skipDimension);
+        update.setAttribute('disabled', '');
+        skip.setAttribute('disabled', '');
+        google.script.run.withSuccessHandler(function() { 
+          checkClose();
+        }).updateDimension('update', accountId, propertyId, newI, nDim);
+      };
+      
+      skipDimension = function() {
+        update.removeEventListener('click', updateDimension);
+        skip.removeEventListener('click', skipDimension);
+        update.setAttribute('disabled', '');
+        skip.setAttribute('disabled', '');
+        checkClose();
+      };
+      
+      if (oDim) {
+        update.removeAttribute('disabled');
+        skip.removeAttribute('disabled'); 
+        warning.className = 'block error';
+        warning.innerHTML = 'Dimension already populated. UPDATE to get value from sheet, or SKIP to keep original value.';
+        update.addEventListener('click', updateDimension);
+        skip.addEventListener('click', skipDimension);
+      } else {
+        warning.innerHTML = 'Updating dimension...';
+        warning.className = 'block';
+        update.setAttribute('disabled', '');
+        skip.setAttribute('disabled', '');
+        google.script.run.withSuccessHandler(function() { 
+          checkClose();
+        }).updateDimension('create', accountId, propertyId, newI, nDim);
+      }
+    };
+    
+    run(0);
+      
+    close.addEventListener('click', function() {
+      google.script.host.close();
+    });
+  })();
+</script>

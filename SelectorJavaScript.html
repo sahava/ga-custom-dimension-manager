@@ -1,0 +1,62 @@
+<script>
+  (function() {
+    var accountHierarchy = {};
+    
+    var addProperties = function(e) {
+      var aid = e.value;
+      var propertySelect = document.querySelector('#properties');
+      var start = document.querySelector('#start');
+      var temp;
+      propertySelect.disabled = true;
+      propertySelect.innerHTML = '';
+      start.disabled = true;
+      accountHierarchy[aid].webProperties.forEach(function(prop) {
+        temp = document.createElement('option');
+        temp.value = prop.id;
+        temp.innerHTML = prop.name;
+        propertySelect.appendChild(temp);
+      });
+      document.querySelector('#fetching').style.display = 'none';
+      document.querySelector('#accountWrapper').style.display = 'block';
+      document.querySelector('#propertyWrapper').style.display = 'block';
+      propertySelect.disabled = false;
+      start.disabled = false;
+    };  
+    
+    var addAccounts = function(accountSummary) {
+      var accountSelect = document.querySelector('#accounts');
+      var temp;
+      accountSummary.items.forEach(function(acct) {
+        temp = document.createElement('option');
+        temp.value = acct.id;
+        temp.innerHTML = acct.name;
+        accountSelect.appendChild(temp);
+        accountHierarchy[acct.id] = {
+          webProperties: acct.webProperties
+        };
+      });
+      accountSelect.addEventListener('change', function(e) {
+        addProperties(e.target);
+      });
+      addProperties(accountSelect.options[accountSelect.selectedIndex]);
+    };
+    
+    google.script.run.withSuccessHandler(addAccounts).fetchAccounts();
+    
+    document.querySelector('#close').addEventListener('click', function() {
+      google.script.host.close();
+    });
+    
+    document.querySelector('#start').addEventListener('click', function() {
+      var accounts = document.querySelector('#accounts');
+      var properties = document.querySelector('#properties');
+      google.script.run
+        .withSuccessHandler(function() { google.script.host.close(); })
+        .startProcess(
+          accounts.options[accounts.selectedIndex].value, 
+          properties.options[properties.selectedIndex].value,
+          document.querySelector('[name="howManyDimensions"]:checked').value
+        );
+    });
+  })();
+</script>

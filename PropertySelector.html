@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+  </head>
+  <body>
+    <div id="fetching">
+      Fetching data...
+    </div>
+    <div id="accountWrapper" class="block form-group" style="display: none">
+      <label for="accounts">Select account</label>
+      <select id="accounts"></select>
+    </div>
+    <div id="propertyWrapper" class="block form-group" style="display: none">
+      <label for="property">Select property</label>
+      <select id="properties"></select>
+    </div>
+    <div class="block">
+      Process dimensions
+      <br/>
+      <label>1-20</label>
+      <input type="radio" value="20" name="howManyDimensions" checked/>
+      <label>1-200</label>
+      <input type="radio" value="200" name="howManyDimensions"/>
+    </div>
+    <div class="block">
+      <button class="action" id="start" disabled>Start</button>    
+      <button id="close">Close</button>
+    </div>
+    <?!= include('SelectorJavaScript'); ?>
+</body>
+</html>
+
+
