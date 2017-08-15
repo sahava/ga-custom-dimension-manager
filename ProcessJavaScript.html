@@ -18,6 +18,22 @@
     var sourceData = data.sourceData;
     var i, newI, oDim, nDim;
     
+    var disableButtons = function() {
+      update.setAttribute('disabled', '');
+      skip.setAttribute('disabled', '');
+    };
+    
+    var enableButtons = function() {
+      update.removeAttribute('disabled');
+      skip.removeAttribute('disabled');
+    };
+    
+    var showError = function(e) {
+      warning.className = 'block error';
+      warning.innerHTML = e.message;
+      close.innerHTML = 'Close';
+    };
+    
     var run = function(i) {
       var updateDimension, skipDimension, checkClose;
       oDim = dimensions.items[i];
@@ -45,24 +61,21 @@
       updateDimension = function() {
         update.removeEventListener('click', updateDimension);
         skip.removeEventListener('click', skipDimension);
-        update.setAttribute('disabled', '');
-        skip.setAttribute('disabled', '');
-        google.script.run.withSuccessHandler(function() { 
-          checkClose();
-        }).updateDimension('update', accountId, propertyId, newI, nDim);
+        disableButtons();
+        warning.className = 'block';
+        warning.innerHTML = 'Updating dimension...';
+        google.script.run.withFailureHandler(showError).withSuccessHandler(checkClose).updateDimension('update', accountId, propertyId, newI, nDim);
       };
       
       skipDimension = function() {
         update.removeEventListener('click', updateDimension);
         skip.removeEventListener('click', skipDimension);
-        update.setAttribute('disabled', '');
-        skip.setAttribute('disabled', '');
+        disableButtons();
         checkClose();
       };
       
       if (oDim) {
-        update.removeAttribute('disabled');
-        skip.removeAttribute('disabled'); 
+        enableButtons();
         warning.className = 'block error';
         warning.innerHTML = 'Dimension already populated. UPDATE to get value from sheet, or SKIP to keep original value.';
         update.addEventListener('click', updateDimension);
@@ -70,11 +83,8 @@
       } else {
         warning.innerHTML = 'Updating dimension...';
         warning.className = 'block';
-        update.setAttribute('disabled', '');
-        skip.setAttribute('disabled', '');
-        google.script.run.withSuccessHandler(function() { 
-          checkClose();
-        }).updateDimension('create', accountId, propertyId, newI, nDim);
+        disableButtons();
+        google.script.run.withFailureHandler(showError).withSuccessHandler(checkClose).updateDimension('create', accountId, propertyId, newI, nDim);
       }
     };
     

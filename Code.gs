@@ -1,11 +1,15 @@
 function buildSourceSheet() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Source Data');
-  var i;
+  var i, defaultDim;
   if (!sheet) {
     sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('Source Data');
   }
+  defaultDim = sheet.getRange(2, 2, 1, 3).getValues();
   sheet.getRange(1, 2, 1, 3).setValues([['Name', 'Scope', 'Active']]);
   sheet.getRange(2, 1, 1, 1).setValue('DEFAULT/EMPTY');
+  if (isEmpty(defaultDim[0])) {
+    sheet.getRange(2, 2, 1, 3).setValues([['(n/a)', 'HIT', 'false']]);
+  }
   sheet.getRange(1, 1, 203, 4).setNumberFormat('@');
   for (i = 1; i <= 200; i++) {
     sheet.getRange(2 + i, 1, 1, 1).setValue('ga:dimension' + i);
@@ -88,12 +92,30 @@ function startProcess(aid, pid, limit) {
   SpreadsheetApp.getUi().showModalDialog(template.evaluate().setWidth(400).setHeight(400), 'Manage Custom Dimensions for ' + pid);
 } 
 
+function isValidSheet(sheet) {
+  var defaultDim = sheet.getRange(2, 2, 1, 3).getValues();
+  var dims = sheet.getRange(3, 2, 200, 3).getValues();
+  var i;
+  if (!isValid(defaultDim[0])) {
+    throw new Error('You must populate the DEFAULT/EMPTY row with proper values');
+  }
+  for (i = 0; i < dims.length; i++) {
+    if (!isEmpty(dims[i]) && !isValid(dims[i])) {
+      throw new Error('Invalid values for dimension ga:dimension' + (i + 1));
+    }
+  }
+  return true;
+}
+
 function openDimensionModal() {
   var ui = SpreadsheetApp.getUi();
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Source Data');
   var html = HtmlService.createTemplateFromFile('PropertySelector').evaluate().setWidth(400).setHeight(230);
   if (!sheet) { 
     throw new Error('You need to create the Source Data sheet first');
+  }
+  if (!isValidSheet(sheet)) {
+    throw new Error('You must populate the Source Data fields correctly');
   }
   SpreadsheetApp.getUi().showModalDialog(html, 'Select account and property for management');
 }
