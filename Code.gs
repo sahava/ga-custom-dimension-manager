@@ -70,7 +70,7 @@ function buildSourceData(sheet) {
 
 function updateDimension(action, aid, pid, index, newDimension) {
   if (action === 'update') {
-    return Analytics.Management.CustomDimensions.update(newDimension, aid, pid, 'ga:dimension' + index);
+    return Analytics.Management.CustomDimensions.update(newDimension, aid, pid, 'ga:dimension' + index, {ignoreCustomDataSourceLinks: true});
   }
   if (action === 'create') {
     return Analytics.Management.CustomDimensions.insert(newDimension, aid, pid);
