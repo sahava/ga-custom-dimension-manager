@@ -110,7 +110,7 @@ function isValidSheet(sheet) {
 function openDimensionModal() {
   var ui = SpreadsheetApp.getUi();
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Source Data');
-  var html = HtmlService.createTemplateFromFile('PropertySelector').evaluate().setWidth(400).setHeight(230);
+  var html = HtmlService.createTemplateFromFile('PropertySelector').evaluate().setWidth(400).setHeight(280);
   if (!sheet) { 
     throw new Error('You need to create the Source Data sheet first');
   }

@@ -34,6 +34,12 @@
       close.innerHTML = 'Close';
     };
     
+    var isSame = function(oDim, nDim) {
+      return oDim.name === nDim.name &&
+             oDim.scope === nDim.scope &&
+             oDim.active.toString() === nDim.active.toString();
+    };
+    
     var run = function(i) {
       var updateDimension, skipDimension, checkClose;
       oDim = dimensions.items[i];
@@ -74,14 +80,18 @@
         checkClose();
       };
       
-      if (oDim) {
+      if (oDim && isSame(oDim, nDim)) {
+        warning.className = 'block';
+        warning.innerHTML = 'Skipping dimension...';
+        window.setTimeout(skipDimension, 100);
+      } else if (oDim) {
         enableButtons();
         warning.className = 'block error';
         warning.innerHTML = 'Dimension already populated. UPDATE to get value from sheet, or SKIP to keep original value.';
         update.addEventListener('click', updateDimension);
         skip.addEventListener('click', skipDimension);
       } else {
-        warning.innerHTML = 'Updating dimension...';
+        warning.innerHTML = 'Creating dimension...';
         warning.className = 'block';
         disableButtons();
         google.script.run.withFailureHandler(showError).withSuccessHandler(checkClose).updateDimension('create', accountId, propertyId, newI, nDim);
