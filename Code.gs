@@ -8,7 +8,7 @@ function buildSourceSheet() {
   sheet.getRange(1, 2, 1, 3).setValues([['Name', 'Scope', 'Active']]);
   sheet.getRange(2, 1, 1, 1).setValue('DEFAULT/EMPTY');
   if (isEmpty(defaultDim[0])) {
-    sheet.getRange(2, 2, 1, 3).setValues([['(n/a)', 'HIT', 'false']]);
+    sheet.getRange(2, 2, 1, 3).setNumberFormat('@').setValues([['(n/a)', 'HIT', 'false']]);
   }
   sheet.getRange(1, 1, 203, 4).setNumberFormat('@');
   for (i = 1; i <= 200; i++) {
