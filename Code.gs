@@ -1,19 +1,37 @@
 function buildSourceSheet() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Source Data');
-  var i, defaultDim;
+  var i, defaultDim, scopeRange, scopeRule, activeRange, activeRule;
   if (!sheet) {
     sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('Source Data');
   }
   defaultDim = sheet.getRange(2, 2, 1, 3).getValues();
   sheet.getRange(1, 2, 1, 3).setValues([['Name', 'Scope', 'Active']]);
   sheet.getRange(2, 1, 1, 1).setValue('DEFAULT/EMPTY');
+  sheet.getRange(1, 1, 203, 4).setNumberFormat('@');
   if (isEmpty(defaultDim[0])) {
     sheet.getRange(2, 2, 1, 3).setNumberFormat('@').setValues([['(n/a)', 'HIT', 'false']]);
   }
-  sheet.getRange(1, 1, 203, 4).setNumberFormat('@');
   for (i = 1; i <= 200; i++) {
     sheet.getRange(2 + i, 1, 1, 1).setValue('ga:dimension' + i);
   }
+  
+  // Set validation for SCOPE
+  scopeRange = sheet.getRange(2, 3, 201, 1);
+  scopeRule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['HIT','PRODUCT','SESSION','USER'])
+    .setAllowInvalid(false)
+    .setHelpText('Scope must be one of HIT, PRODUCT, SESSION or USER')
+    .build();
+  scopeRange.setDataValidation(scopeRule);
+  
+  // Set validation for ACTIVE
+  activeRange = sheet.getRange(2, 4, 201, 1);
+  activeRule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['true', 'false'])
+    .setAllowInvalid(false)
+    .setHelpText('Active must be one of true or false')
+    .build();
+  activeRange.setDataValidation(activeRule);
 }
 
 function fetchAccounts() {
