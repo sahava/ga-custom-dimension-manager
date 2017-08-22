@@ -46,16 +46,30 @@
     document.querySelector('#close').addEventListener('click', function() {
       google.script.host.close();
     });
-    
+
+
+    document.querySelector('[name="howManyDimensionsCustom"]').addEventListener('change', function(){
+        document.querySelectorAll('[name="howManyDimensions"]').forEach(item => {
+          item.checked = false;
+        });
+    	document.querySelector('[name="howManyDimensions"][value="custom"]').checked = true;
+    });
+
     document.querySelector('#start').addEventListener('click', function() {
       var accounts = document.querySelector('#accounts');
       var properties = document.querySelector('#properties');
+      var dimensionsNumber = document.querySelector('[name="howManyDimensions"]:checked').value;
+
+      if (dimensionsNumber === 'custom') {
+      	dimensionsNumber = document.querySelector('[name="howManyDimensionsCustom"]').value;
+      }
+
       google.script.run
         .withSuccessHandler(function() { google.script.host.close(); })
         .startProcess(
           accounts.options[accounts.selectedIndex].value, 
           properties.options[properties.selectedIndex].value,
-          document.querySelector('[name="howManyDimensions"]:checked').value
+          dimensionsNumber
         );
     });
   })();
