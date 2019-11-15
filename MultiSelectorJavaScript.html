@@ -1,0 +1,145 @@
+<script>
+  (function() {
+    var addAccounts = function(accountSummary) {
+      var accountsDiv = document.querySelector('#accounts');
+      var tempDiv;
+      accountSummary.items.forEach(function(acct) {
+        var propHtml = acct.webProperties.map(function(prop) {
+          return '<tr data-account-id="' + acct.id + '" data-property-id="' + prop.id + '"><td class="check"><input type="checkbox"></td><td>' + prop.name + ' <span class="info ok">Done</span><span class="info noexist">NotFound</span><span class="info noperm">NoPermissions</span></td></tr>';
+        }).join('');
+        tempDiv = document.createElement('div');
+        tempDiv.setAttribute('data-account-id', acct.id);
+        tempDiv.setAttribute('data-open', 'false');
+        tempDiv.innerHTML = '<div><span class="name">' + acct.name + '</span><span class="count"></span></div><table class="properties"><thead><th><input class="selectAll" data-account-id="' + acct.id + '" type="checkbox"></th><th>Property name</th></thead><tbody>' + propHtml + '</tbody></table>';
+        accountsDiv.appendChild(tempDiv);
+      });
+      document.querySelector('#fetching').style.display = 'none';
+      accountsDiv.style.display = 'block';
+
+    };
+    
+    var updateCustomDimData = function(selectionData) {
+      var id = document.querySelector('#customDimensionId');
+      var val = document.querySelector('#customDimensionValue');
+      var scope = document.querySelector('#customDimensionScope');
+      var active = document.querySelector('#customDimensionActive');
+      id.innerHTML = selectionData.customDimensionId;
+      val.innerHTML = selectionData.customDimensionValue;
+      scope.innerHTML = selectionData.customDimensionScope;
+      active.innerHTML = selectionData.customDimensionActive;
+    };
+    
+    var processPropertyClick = function(el) {
+      var accountId = el.getAttribute('data-account-id') || el.closest('[data-account-id]').getAttribute('data-account-id');
+      var allBoxes = document.querySelectorAll('tr[data-account-id="' + accountId + '"] td > input[type="checkbox"]');
+      var start = document.querySelector('#start');
+      var allLength = '';
+      // If the select all box was checked, check all boxes in the current account
+      if (el.className === 'selectAll') {
+        allBoxes.forEach(function(box) { box.checked = el.checked; });
+      }
+      allBoxes = document.querySelectorAll('tr[data-account-id="' + accountId + '"] td > input[type="checkbox"]:checked');
+      allLength = allBoxes.length > 0 ? allBoxes.length.toString() : '';
+      // Set the count of checked boxes for the account in the account header
+      document.querySelector('div[data-account-id="' + accountId + '"] .count').innerHTML = allLength;
+      
+      // Update the count of all selected properties
+      var allPropsSelected = document.querySelectorAll('.properties td > input[type="checkbox"]:checked').length;
+      document.querySelector('.propertyCount').innerHTML = allPropsSelected;
+      // If at least one property is selected, enable the Start button
+      if (allPropsSelected === 0) {
+        start.setAttribute('disabled', '');
+      } else {
+        start.removeAttribute('disabled');
+      }
+    };
+    
+    google.script.run.withSuccessHandler(updateCustomDimData).fetchSelectionValues();
+    google.script.run.withSuccessHandler(addAccounts).fetchAccounts();
+    
+    document.querySelector('#close').addEventListener('click', function() {
+      google.script.host.close();
+    });
+    
+    var clickAccount = function(e) {
+      var el = e.target;
+      var orig = e.target;
+      e.target.blur();
+      // If click landed on a checkbox, process the property selection
+      while (!el.matches('div[data-account-id]')) {
+        if (el.matches('.properties, .properties *')) {
+          processPropertyClick(el);
+          return;
+        }
+        el = el.parentElement;
+      }
+      
+      // Handle accordions so that only one is open at any given time
+      var currentlyOpen = document.querySelector('#accounts [data-open="true"]');
+      if (!!currentlyOpen && currentlyOpen !== el) {
+        currentlyOpen.setAttribute('data-open', 'false');
+      }
+      
+      if (el.getAttribute('data-open') === 'true') {
+        el.setAttribute('data-open', 'false');
+      } else {
+        el.setAttribute('data-open', 'true');
+      }
+      
+    };
+    
+    var updatePropStatus = function(status) {
+      var tr = document.querySelector('tr[data-account-id="' + status.aid + '"][data-property-id="' + status.pid + '"]');
+      switch(status.status) {
+        case 'noexist':
+          tr.querySelector('span.noexist').style.display = 'inline-block';
+          break;
+        case 'noexist':
+          tr.querySelector('span.perm').style.display = 'inline-block';
+          break;
+        default:
+          tr.querySelector('span.ok').style.display = 'inline-block';
+          break;
+      }
+    };
+
+    document.querySelector('#accounts').addEventListener('click', clickAccount);
+    
+    document.querySelector('#start').addEventListener('click', function() {      
+      document.querySelectorAll('.properties thead').forEach(function(h) {
+        h.parentElement.removeChild(h);
+      });
+      
+      // Remove all unchecked rows
+      document.querySelectorAll('input[type="checkbox"]:not(:checked)').forEach(function(e) { e = e.parentElement.parentElement; e.parentElement.removeChild(e); });
+      
+      // Remove all empty accounts, and open the rest
+      document.querySelectorAll('#accounts div[data-account-id]').forEach(function(a) { if (a.querySelectorAll('td > input[type="checkbox"]').length === 0) { a.parentElement.removeChild(a); } else {a.setAttribute('data-open', 'true');} });
+      
+      // Remove the click listener from accounts
+      document.querySelector('#accounts').removeEventListener('click', clickAccount);
+      
+      // Disable start button
+      document.querySelector('#start').setAttribute('disabled', '');
+      
+      // Get customdim data
+      var customDim = {
+        id: document.querySelector('#customDimensionId').innerHTML,
+        name: document.querySelector('#customDimensionValue').innerHTML,
+        scope: document.querySelector('#customDimensionScope').innerHTML,
+        active: document.querySelector('#customDimensionActive').innerHTML
+      };
+      
+      // Process accounts and properties
+      var allChecks = document.querySelectorAll('.properties td > input[type="checkbox"]:checked').forEach(function(el) {
+        while (!el.getAttribute('data-account-id')) {
+          el = el.parentElement;
+        };
+        google.script.run.withSuccessHandler(updatePropStatus).updatePropDimension(el.getAttribute('data-account-id'), el.getAttribute('data-property-id'), customDim); 
+      });
+
+      
+    });
+    
+  })();
+</script>
