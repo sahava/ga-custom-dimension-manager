@@ -95,6 +95,30 @@ function updateDimension(action, aid, pid, index, newDimension) {
   }
 }
 
+function updatePropDimension(aid, pid, newDimension) {
+  try {
+    Analytics.Management.CustomDimensions.update(newDimension, aid, pid, newDimension.id, {ignoreCustomDataSourceLinks: true});
+    return {
+      aid: aid,
+      pid: pid,
+      status: 'done'
+    };
+  } catch(e) {
+    var status = '';
+    if(e.details.errors[0].reason === 'insufficientPermissions') {
+      status = 'noperm';
+    }
+    if(e.details.errors[0].message.indexOf(newDimension.id + ' not found') > -1) {
+      status = 'noexist';
+    }
+    return {
+      aid: aid,
+      pid: pid,
+      status: status
+    };
+  }
+}
+
 function startProcess(aid, pid, limit) {
   var dimensions = Analytics.Management.CustomDimensions.list(aid, pid, {fields: 'items(id, name, scope, active)'});
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Source Data');
@@ -135,13 +159,57 @@ function openDimensionModal() {
   if (!isValidSheet(sheet)) {
     throw new Error('You must populate the Source Data fields correctly');
   }
-  SpreadsheetApp.getUi().showModalDialog(html, 'Select account and property for management');
+  ui.showModalDialog(html, 'Select account and property for management');
+}
+
+function fetchSelectionValues() {
+  var selection = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Source Data').getActiveCell();
+  return {
+    customDimensionId: selection.getValue(),
+    customDimensionValue: selection.offset(0, 1).getValue(),
+    customDimensionScope: selection.offset(0, 2).getValue(),
+    customDimensionActive: selection.offset(0, 3).getValue()
+  };
+} 
+
+function isValidDimensionSelection(selection) {
+  if(!/^ga:dimension(1-9|[1-9][0-9]|1[0-9][0-9]|200)$/.test(selection.getValue())) {
+    return false;
+  }
+  selection = selection.offset(0, 1);
+  if (/^$/.test(selection.getValue())) {
+    return false;
+  }
+  selection = selection.offset(0, 1);
+  if (['HIT', 'PRODUCT', 'SESSION', 'USER'].indexOf(selection.getValue()) === -1) {
+    return false;
+  }
+  selection = selection.offset(0, 1);
+  if (['true', 'false'].indexOf(selection.getValue()) === -1) {
+    return false;
+  }
+  return true;
+}
+
+function openPropertyModal() {
+  var ui = SpreadsheetApp.getUi();
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Source Data');
+  if (!sheet) {
+    throw new Error('You need to create the Source Data sheet first');
+  }
+  var selection = sheet.getActiveCell();
+  if (!isValidDimensionSelection(selection)) {
+    throw new Error('You must use a properly populated Source Data sheet, and you must select a cell with a valid "ga:dimensionXX" label.');
+  }
+  var html = HtmlService.createTemplateFromFile('MultiPropertySelector').evaluate().setWidth(400).setHeight(280);
+  ui.showModalDialog(html, 'Select target properties');
 }
 
 function onOpen() {
   SpreadsheetApp.getUi()
-      .createMenu('Google Analytics Custom Dimension Manager')
+      .createMenu('Sanoma Sheets - GA Manager - test')
       .addItem('1. Build/reformat Source Data sheet', 'buildSourceSheet')
-      .addItem('2. Manage Custom Dimensions', 'openDimensionModal')
+      .addItem('2. Create/update Custom Dimensions', 'openDimensionModal')
+      .addItem('3. Update single Custom Dimension to multiple Properties', 'openPropertyModal')
       .addToUi();
 }
