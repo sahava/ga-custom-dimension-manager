@@ -1,0 +1,69 @@
+<style>
+  #accounts > div {
+    margin: 5px;
+    border: 1px dotted #ccc;
+    box-shadow: 1px 1px 1px #555;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    background-color: aliceblue;
+  }
+  
+  div[data-open="true"] > div {
+    background-color: #042c4e !important;
+    color: #fff;
+  }
+  
+  div[data-open="false"] .properties {
+    display: none;
+  }
+  
+  td.check {
+    width: 20px;
+  }
+  
+  .properties {
+    background-color: #fff;
+    color: #000;
+    width: 100%;
+  }
+  
+  .properties td {
+    padding: 3px;
+  }
+  
+  .properties th {
+    padding: 3px;
+    font-weight: bold;
+    border-bottom: 1px solid #000 !important;
+  }
+  
+  #accounts > div > div {
+    padding: 3px;
+    font-size: 1.3em;
+    display: inline-block;
+    cursor: pointer;
+    width: 100%;
+  }
+  
+  #accounts span.count {
+    float:right;
+    margin-right: 20px;
+  }
+  
+  span.info {
+    display:none;
+    font-weight: bold;
+  }
+  
+  span.ok {
+    color: green;
+  }
+  
+  span.noexist {
+    color: #f98200;
+  }
+  
+  span.noperm {
+    color: red;
+  }
+</style>
