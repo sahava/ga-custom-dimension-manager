@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+    <?!= include('MultiStyles') ?>
+  </head>
+  <body>
+    <div class="block secondary form-group">
+      Custom Dimension ID: <strong><span id="customDimensionId"></span></strong><br/>
+      Custom Dimension value: <strong><span id="customDimensionValue"></span></strong><br/>
+      Custom Dimension scope: <strong><span id="customDimensionScope"></span></strong><br/>
+      Custom Dimension active: <strong><span id="customDimensionActive"></span></strong><br/>
+    </div>
+    <div id="fetching" class="block form-group">
+      Fetching data...
+    </div>
+    <div id="accounts" style="display:none"></div>
+    <div class="block">
+      Properties selected: <span class="propertyCount">0</span>
+    </div>
+    <div class="block">
+      <button class="action" id="start" disabled>Start</button>    
+      <button id="close">Close</button>
+    </div>
+    <?!= include('MultiSelectorJavaScript'); ?>
+</body>
+</html>
+
